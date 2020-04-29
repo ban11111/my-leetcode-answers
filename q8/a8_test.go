@@ -1,6 +1,10 @@
 package q8
 
-import "testing"
+import (
+	"fmt"
+	"github.com/dipperin/go-ms-toolkit/json"
+	"testing"
+)
 
 func Test_myAtoi(t *testing.T) {
 	type args struct {
@@ -54,4 +58,47 @@ func Test_myAtoi(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestName(t *testing.T) {
+	const (
+		MarProfileSwitchMandatory = "Mandatory" // 默认?
+		MqrProfileSwitchOptional  = "Optional"
+		MqrProfileSwitchHidden    = "Hidden"
+	)
+
+	// 各项信息(展示/必填)开关
+	type MqrProfileSwitch struct {
+		IdInfoSwitch           string `json:"id_info_switch"`
+		WorkInfoSwitch         string `json:"work_info_switch"`
+		ContactInfoSwitch      string `json:"contact_info_switch"`
+		AccountInfoSwitch      string `json:"account_info_switch"`
+		PersonalInfoSwitch     string `json:"personal_info_switch"`
+		SupplementaryDocSwitch string `json:"supplementary_doc_switch"`
+	}
+	fmt.Println(json.StringifyJson(MqrProfileSwitch{
+		IdInfoSwitch:           MarProfileSwitchMandatory,
+		WorkInfoSwitch:         MarProfileSwitchMandatory,
+		ContactInfoSwitch:      MarProfileSwitchMandatory,
+		AccountInfoSwitch:      MarProfileSwitchMandatory,
+		PersonalInfoSwitch:     MarProfileSwitchMandatory,
+		SupplementaryDocSwitch: MarProfileSwitchMandatory,
+	}))
+}
+
+func TestSomething(t *testing.T) {
+	type test struct {
+		s string
+	}
+	var slice []interface{}
+	slice = append(slice, &test{"fff"})
+	fmt.Println(slice)
+	for _, x := range slice {
+		x = &test{"ccc"}
+		fmt.Println(x)
+	}
+	x := slice[0]
+	x = &test{"ccc"}
+	fmt.Println(x)
+	fmt.Println(slice, slice[0].(*test).s)
 }
