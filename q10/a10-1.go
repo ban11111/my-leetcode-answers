@@ -270,7 +270,6 @@ func (r *Reg) iterate(s *string, tokenLeft, tokenRight, sLeft, sRight int) {
 func (r *Reg) wrap(f func()) {
 	r.wg.Add(1)
 	go func() {
-
 		defer r.wg.Done()
 		f()
 	}()
