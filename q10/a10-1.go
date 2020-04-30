@@ -229,12 +229,12 @@ func (r *Reg) Match(s string) bool {
 
 		plain := r.tokens[i+1]
 		ok, index := plain.findFirst(&s, sLeft, sRight, token.token()[len(token.token())-1])
+		if !ok {
+			return false
+		}
 		r.wrap(func() {
 			r.iterate(&s, i, tokenRight, index+1, sRight)
 		})
-		if !ok {
-			return r.WaitForResult()
-		}
 		token.matchAll(&s, sLeft, index)
 		i++
 	}
@@ -242,7 +242,6 @@ func (r *Reg) Match(s string) bool {
 }
 
 func (r *Reg) iterate(s *string, tokenLeft, tokenRight, sLeft, sRight int) {
-	fmt.Println("???????????")
 	for i := tokenLeft; i < tokenRight; i++ {
 		token := r.tokens[i]
 		if i == tokenRight-1 { // last one
