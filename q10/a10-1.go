@@ -132,7 +132,7 @@ func (r *Reg) parseTokens() *Reg {
 			}
 			plain = ""
 			right = i + 2
-			r.flatTokens = append(r.flatTokens, r.parse(left, right))
+			r.flatTokens = append(r.flatTokens, r.parseToken(left, right))
 			i++
 			left = i + 2
 		} else {
@@ -147,6 +147,19 @@ func (r *Reg) parseTokens() *Reg {
 	fmt.Println(len(r.flatTokens), r.flatTokens[0].token(), r.flatTokens[1].token(), r.flatTokens[2].token(), r.flatTokens[3].token())
 	fmt.Println(len(r.flatTokens), r.flatTokens[0].tokenName(), r.flatTokens[1].tokenName(), r.flatTokens[2].tokenName(), r.flatTokens[3].tokenName())
 	return r.combineTokens()
+}
+
+func (r *Reg) parseToken(left, right int) regToken {
+	if right-left == 2 {
+		if r.pattern[left+1] == '*' {
+			if r.pattern[left] == '.' {
+				return &dotStarToken{}
+			}
+			return &starsToken{letters: r.pattern[left : left+1]}
+		}
+	}
+	plain := r.pattern[left:right]
+	return &plainToken{pattern: plain}
 }
 
 func (r *Reg) combineTokens() *Reg {
@@ -174,19 +187,6 @@ func (r *Reg) combineTokens() *Reg {
 	}
 	//fmt.Println(r.tokens[0].token(), r.tokens[1].token())
 	return r
-}
-
-func (r *Reg) parse(left, right int) regToken {
-	if right-left == 2 {
-		if r.pattern[left+1] == '*' {
-			if r.pattern[left] == '.' {
-				return &dotStarToken{}
-			}
-			return &starsToken{letters: r.pattern[left : left+1]}
-		}
-	}
-	plain := r.pattern[left:right]
-	return &plainToken{pattern: plain}
 }
 
 func (r *Reg) Match(s string) bool {
