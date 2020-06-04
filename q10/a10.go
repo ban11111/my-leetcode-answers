@@ -51,7 +51,7 @@ func (ts *tokenSets) WalkAndMatch(buffer *bytes.Buffer) (matched bool) {
 	}
 }
 
-func isMatch(s string, p string) bool {
+func isMatchOld(s string, p string) bool {
 	tokens := parseToken(p)
 	buffer := bytes.NewBufferString(s)
 	return tokens.WalkAndMatch(buffer)

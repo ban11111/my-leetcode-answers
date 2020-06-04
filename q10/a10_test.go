@@ -161,51 +161,51 @@ func Test_isMatch1(t *testing.T) {
 		args args
 		want bool
 	}{
-		//{
-		//	name: "0",
-		//	args: args{s:"aaaaaaa", p:"a*b*"},
-		//	want: true,
-		//},
-		//{
-		//	name: "1",
-		//	args: args{s:"ababcd", p:"a*b*cd"},
-		//	want: false,
-		//},
-		//{
-		//	name: "2",
-		//	args: args{s:"aaabbbbabcd", p:"a*b*a*b*cd"},
-		//	want: true,
-		//},
-		//{
-		//	name: "3",
-		//	args: args{s:"abcabcd", p:"a*b*a*b*cd"},
-		//	want: false,
-		//},
-		//{
-		//	name: "4",
-		//	args: args{s:"abcd", p:"a*b*a*b*cd"},
-		//	want: true,
-		//},
-		//{
-		//	name: "5",
-		//	args: args{s:"cd", p:"a*b*a*b*cd"},
-		//	want: true,
-		//},
-		//{
-		//	name: "6",
-		//	args: args{s:"babacd", p:"a*b*a*b*cd"},
-		//	want: false,
-		//},
+		{
+			name: "0",
+			args: args{s:"aaaaaaa", p:"a*b*"},
+			want: true,
+		},
+		{
+			name: "1",
+			args: args{s:"ababcd", p:"a*b*cd"},
+			want: false,
+		},
+		{
+			name: "2",
+			args: args{s:"aaabbbbabcd", p:"a*b*a*b*cd"},
+			want: true,
+		},
+		{
+			name: "3",
+			args: args{s:"abcabcd", p:"a*b*a*b*cd"},
+			want: false,
+		},
+		{
+			name: "4",
+			args: args{s:"abcd", p:"a*b*a*b*cd"},
+			want: true,
+		},
+		{
+			name: "5",
+			args: args{s:"cd", p:"a*b*a*b*cd"},
+			want: true,
+		},
+		{
+			name: "6",
+			args: args{s:"babacd", p:"a*b*a*b*cd"},
+			want: false,
+		},
 		{
 			name: "7",
 			args: args{s: "acd", p: "a*acd"},
 			want: true,
 		},
-		//{
-		//	name: "8",
-		//	args: args{s:"aacdjkl", p:"a*acdj*kl"},
-		//	want: true,
-		//},
+		{
+			name: "8",
+			args: args{s:"aacdjkl", p:"a*acdj*kl"},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
