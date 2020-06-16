@@ -18,7 +18,6 @@ func (t *starsToken) token() string {
 	return t.letters
 }
 func (t *starsToken) matchAll(s *string, left, right int) (matched bool, matchedLen int) {
-	fmt.Println("stars matchAll", *s, left, right)
 	if left > right || len(*s) == 0 {
 		return true, 0
 	}
@@ -68,7 +67,6 @@ func (t *plainToken) token() string {
 	return t.pattern
 }
 func (t *plainToken) matchAll(s *string, left, right int) (bool, int) {
-	fmt.Println("matchAll plain, ", *s, left, right)
 	if left > right || right-left+1 != len(t.pattern) || right >= len(*s) || left >= len(*s) || left < 0 || right < 0 {
 		return false, 0
 	}
@@ -77,7 +75,6 @@ func (t *plainToken) matchAll(s *string, left, right int) (bool, int) {
 		if ti > len(t.pattern)-1 {
 			return false, 0
 		}
-		fmt.Println("matchAll plain, ", *s, len(*s), t.pattern, ti, i, left, right)
 		if t.pattern[ti] != (*s)[i] && t.pattern[ti] != '.' {
 			return false, 0
 		}
@@ -86,7 +83,6 @@ func (t *plainToken) matchAll(s *string, left, right int) (bool, int) {
 	return true, right - left + 1
 }
 func (t *plainToken) findFirst(s *string, left int) (bool, int) {
-	fmt.Println("findFirst, left", left)
 	tokenIndex := 0
 	for i := left; i < len(*s); i++ {
 		if t.pattern[tokenIndex] == (*s)[i] || t.pattern[tokenIndex] == '.' {
@@ -186,7 +182,6 @@ func (r *Reg) parseTokens() *Reg {
 }
 
 func (r *Reg) parseToken(left, right int) regToken {
-	//fmt.Println("parseToken", left, right)
 	if right-left == 2 {
 		if r.pattern[left+1] == '*' {
 			if r.pattern[left] == '.' {
@@ -238,7 +233,7 @@ func (r *Reg) Match(s string) bool {
 		}
 		s = s[len(token.token()):]
 		sLen = len(s)
-		//sLeft = len(token.token())
+		sRight = sLen - 1
 		tokenLeft++
 	}
 	if tokenNum > 1 {
@@ -252,47 +247,42 @@ func (r *Reg) Match(s string) bool {
 			tokenRight--
 		}
 	}
-	fmt.Println("after trimming", s)
+	//fmt.Println("after trimming", s, sLeft, sRight)
 	for i := tokenLeft; i < tokenRight; i++ {
 		token := r.tokens[i]
 		if i == tokenRight-1 { // last one
-			ok, _ := token.matchAll(&s, sLeft, sRight)
-			fmt.Println("Last token MatchAll", ok)
+			ok, mLen := token.matchAll(&s, sLeft, sRight)
 			if i == 0 || ok {
-				return ok
+				return ok && mLen == sRight - sLeft+1
 			}
 			return r.WaitForResult()
 		}
 		r.matched = make(chan struct{})
 
 		plain := r.tokens[i+1]
-		fmt.Println("findFirst, sLeft", sLeft, "sRight", sRight)
 		ok, index := plain.findFirst(&s, sLeft)
 		if !ok {
-			fmt.Println("???? is this it then ??????? sLeft", sLeft, "sRight", sRight)
 			return false
 		}
 		if ok, _ := token.matchAll(&s, sLeft, index-len(plain.token())); !ok {
-			fmt.Println("stars matchAll failed???", sLeft, index-1, s[sLeft: index-len(plain.token())])
 			return r.WaitForResult()
 		}
-		fmt.Println("iterate", tokenLeft, tokenRight, sLeft+1, index-1)
-		sLeft = index+1
 		if sLeft <= len(s)-1  {
-			r.wrap(&s, tokenLeft, tokenRight, sLeft, sRight)
+			r.wrap(&s, i, tokenRight, sLeft, sLeft+1, sRight)
 		}
+		sLeft = index+1
 		i++
 	}
 	return sLeft >= len(s)
 }
 
-func (r *Reg) iterate(s *string, tokenLeft, tokenRight, sLeft, sRight int) {
-	fmt.Println("iterate inside", tokenLeft, tokenRight, sLeft, sRight, "s='", (*s)[sLeft:], "'")
+func (r *Reg) iterate(s *string, tokenLeft, tokenRight, sOriginLeft, sLeft, sRight int) {
+
 	for i := tokenLeft; i < tokenRight; i++ {
 		token := r.tokens[i]
 		if i == tokenRight-1 { // last one
-			ok, _ := token.matchAll(s, sLeft, sRight)
-			if ok {
+			ok, mLen := token.matchAll(s, sLeft, sRight)
+			if ok && mLen == sRight - sLeft+1 {
 				r.matched <- struct{}{}
 			}
 			return
@@ -300,28 +290,35 @@ func (r *Reg) iterate(s *string, tokenLeft, tokenRight, sLeft, sRight int) {
 
 		plain := r.tokens[i+1]
 		ok, index := plain.findFirst(s, sLeft)
-		fmt.Println("!!!!!!!!!!!!!!!iterate findFirst!!!!!!!!!!!!!!!!!", index)
-		if index == 16 {
-		}
 		if !ok {
 			return
 		}
-		if ok, _ := token.matchAll(s, sLeft, index); !ok {
-			return
+		if i == tokenLeft {
+			if ok, _ = token.matchAll(s, sOriginLeft, index-len(plain.token())); !ok {
+				return
+			}
+		} else {
+			if ok, _ = token.matchAll(s, sLeft, index-len(plain.token())); !ok {
+				return
+			}
+		}
+		if sLeft <= len(*s)-1 {
+			if i == tokenLeft {
+				r.wrap(s, i, tokenRight, sOriginLeft, sLeft+1, sRight)
+			} else {
+				r.wrap(s, i, tokenRight, sLeft, sLeft+1, sRight)
+			}
 		}
 		sLeft = index+1
-		if sLeft <= len(*s)-1 {
-			r.wrap(s, tokenLeft, tokenRight, sLeft, sRight)
-		}
 		i++
 	}
 }
 
-func (r *Reg) wrap(s *string, tokenLeft, tokenRight, sLeft, sRight int) {
+func (r *Reg) wrap(s *string, tokenLeft, tokenRight, sOriginLeft, sLeft, sRight int) {
 	r.wg.Add(1)
 	go func() {
 		defer r.wg.Done()
-		r.iterate(s, tokenLeft, tokenRight, sLeft, sRight)
+		r.iterate(s, tokenLeft, tokenRight, sOriginLeft, sLeft, sRight)
 	}()
 }
 

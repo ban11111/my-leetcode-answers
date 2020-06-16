@@ -264,14 +264,44 @@ func TestFailed2(t *testing.T) {
 		args args
 		want bool
 	}{
-		//{
-		//	name: "1",
-		//	args: args{s: "mississippi", p: "mis*is*p*."},
-		//	want: false,
-		//},
+		{
+			name: "1",
+			args: args{s: "mississippi", p: "mis*is*p*."},
+			want: false,
+		},
+		{
+			name: "1-0",
+			args: args{s: "ssissipp", p: "s*is*p*"},
+			want: false,
+		},
 		{
 			name: "2",
 			args: args{s: "cbaacacaaccbaabcb", p: "c*b*b*.*ac*.*bc*a*"},
+			want: true,
+		},
+		{
+			name: "2-0",
+			args: args{s: "XXxxXXaXXxaaxbXaababbbbXbxxXXb", p: "c*b*b*.*ac*.*bc*a*"},
+			want: true,
+		},
+		{
+			name: "3",                    // dotStar plain dotStar plain star plain star plain
+			args: args{s: "abbaaaabaabbcba", p:"a*.*ba.*c*..a*.a*."},
+			want: true,
+		},
+		{
+			name: "4",
+			args: args{s: "aaa", p:"ab*a"},
+			want: false,
+		},
+		{
+			name: "4-1",
+			args: args{s: "aaa", p:"ab*a*c*a"},
+			want: true,
+		},
+		{
+			name: "5",
+			args: args{s: "a", p:"aa*"},
 			want: true,
 		},
 	}
