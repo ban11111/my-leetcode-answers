@@ -16,8 +16,11 @@ type SkipList struct {
 
 func NewSkipList(maxLayers int) *SkipList {
 	head := &Item{}
-	for i := 0; i < maxLayers; i++ {
-		head.down = new(SubItem)
+	down := new(SubItem)
+	head.down = down
+	for i := 0; i < maxLayers-2; i++ {
+		down.down = new(SubItem)
+		down = down.down.(*SubItem)
 	}
 	return &SkipList{
 		Head:      head,
@@ -72,6 +75,7 @@ type SubItem struct {
 
 func (s *SubItem) Value(opt ...int) int {
 	return opt[0] // 让他炸
+	//return -1
 }
 
 func (s *SubItem) Next() Node {
@@ -98,21 +102,21 @@ func (s *SubItem) SetDown(n Node) {
 //}
 
 func (sl *SkipList) find(value int) Node {
-	current := sl.Head
-	for {
+	for current := sl.Head; ; {
 		next := current.Next()
-		if next != nil && next.Value() == value {
-			return next
-		}
-		if next != nil && next.Value() < value {
-			current = next
-			continue
-		}
-		if next == nil || next.Value() > value {
+		if _, sub := next.(*SubItem); next == nil || sub || next.Value() > value {
 			if current.Down() == nil {
 				return nil // 最后一层也没有就找不到了
 			}
 			current = current.Down()
+			continue
+		}
+		if next.Value() == value {
+			return next
+		}
+		if next.Value() < value {
+			current = next
+			continue
 		}
 	}
 }
@@ -121,24 +125,23 @@ func (sl *SkipList) insert(value int) bool {
 	layers := sl.random()
 	updateNodes := make([]Node, layers)
 	current := sl.Head
-	for i := 0; ; {
+	for depth, index := 0, 0; current != nil; {
 		next := current.Next()
-		if next != nil && next.Value() == value {
-			return false
-		}
-		if next != nil && next.Value() < value {
-			current = next
-			continue
-		}
-		if next == nil || next.Value() > value {
-			if i >= sl.MaxLayers-layers {
-				updateNodes[i] = current
-			}
-			if current.Down() == nil {
-				break // 最后一层也没有就找不到了
+		if _, sub := next.(*SubItem); next == nil || sub || next.Value() > value { // 可以优化
+			if depth >= sl.MaxLayers-layers {
+				updateNodes[index] = current
+				index++
 			}
 			current = current.Down()
-			i++
+			depth++
+			continue
+		}
+		if next.Value() == value {
+			return false
+		}
+		if next.Value() < value {
+			current = next
+			continue
 		}
 	}
 
@@ -155,26 +158,39 @@ func (sl *SkipList) insert(value int) bool {
 }
 
 func (sl *SkipList) delete(value int) bool {
-	for current := sl.Head; current != nil; {
+	var target Node
+	current := sl.Head
+	for ; current != nil; {
 		next := current.Next()
-		if next == nil {
+		if _, sub := next.(*SubItem); next == nil || sub || next.Value() > value {
 			current = current.Down()
 			continue
 		}
 		if next.Value() == value {
+			target = next
 			current.SetNext(next.Next())
 			current = current.Down()
-			continue
+			break
 		}
 		if next.Value() < value {
 			current = next
 			continue
 		}
-		if next.Value() > value {
-			return false // 不存在
+	}
+	for ; current != nil; {
+		next := current.Next()
+		if next == nil || next != target.Down() {
+			current = next
+			continue
+		}
+		if next == target.Down() {
+			target = next
+			current.SetNext(next.Next())
+			current = current.Down()
+			continue
 		}
 	}
-	return true
+	return target != nil
 }
 
 func (sl *SkipList) random() int {
@@ -187,4 +203,15 @@ func (sl *SkipList) random() int {
 		}
 	}
 	return layer
+}
+
+func (sl *SkipList) len() int {
+	current := sl.Head
+	for ; current.Down() != nil; current = current.Down() {
+	}
+	i := 0
+	for ; current.Next() != nil; i++ {
+		current = current.Next()
+	}
+	return i
 }
