@@ -27,10 +27,12 @@ func TestNewSkipList(t *testing.T) {
 	assert.NotNil(t, node)
 	assert.EqualValues(t, 250, node.Value())
 
-	assert.EqualValues(t, length, sl.len())
+	assert.EqualValues(t, length, sl.deepLen())
+	assert.EqualValues(t, sl.len(), sl.deepLen())
 
 	assert.True(t, sl.delete(250))
 	node = sl.find(250)
 	assert.Nil(t, node)
-	assert.EqualValues(t, length-1, sl.len())
+	assert.EqualValues(t, length-1, sl.deepLen())
+	assert.EqualValues(t, sl.len(), sl.deepLen())
 }

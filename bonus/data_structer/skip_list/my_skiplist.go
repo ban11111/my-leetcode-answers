@@ -12,6 +12,7 @@ func init() {
 type SkipList struct {
 	Head      Node
 	MaxLayers int
+	length    int // 记录元素个数
 }
 
 func NewSkipList(maxLayers int) *SkipList {
@@ -154,6 +155,7 @@ func (sl *SkipList) insert(value int) bool {
 			n.SetNext(downer)
 		}
 	}
+	sl.length++
 	return true
 }
 
@@ -190,7 +192,11 @@ func (sl *SkipList) delete(value int) bool {
 			continue
 		}
 	}
-	return target != nil
+	if target != nil {
+		sl.length--
+		return true
+	}
+	return false
 }
 
 func (sl *SkipList) random() int {
@@ -206,12 +212,16 @@ func (sl *SkipList) random() int {
 }
 
 func (sl *SkipList) len() int {
+	return sl.length
+}
+
+func (sl *SkipList) deepLen() int {
 	current := sl.Head
 	for ; current.Down() != nil; current = current.Down() {
 	}
 	i := 0
-	for ; current.Next() != nil; i++ {
-		current = current.Next()
+	for ; current.Next() != nil; current = current.Next() {
+		i++
 	}
 	return i
 }
