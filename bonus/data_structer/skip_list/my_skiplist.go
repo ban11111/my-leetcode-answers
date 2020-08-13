@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// this is a one-way linklist version, might do a two-way linklist version later which conducts higher performance for deleting
+
 func init() {
 	rand.Seed(time.Now().UnixNano()/3 + 516504610)
 }
@@ -75,8 +77,7 @@ type SubItem struct {
 }
 
 func (s *SubItem) Value(opt ...int) int {
-	return opt[0] // 让他炸
-	//return -1
+	return opt[0] // will panic; panic("wont come to this point, or your program is logically wrong")
 }
 
 func (s *SubItem) Next() Node {
