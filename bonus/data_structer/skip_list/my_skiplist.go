@@ -14,7 +14,7 @@ func init() {
 type SkipList struct {
 	Head      Node
 	MaxLayers int
-	length    int // 记录元素个数
+	length    int // number of all items
 }
 
 func NewSkipList(maxLayers int) *SkipList {
@@ -30,6 +30,14 @@ func NewSkipList(maxLayers int) *SkipList {
 		MaxLayers: maxLayers,
 	}
 }
+
+// There are 2 kinds of nodes, item and sub-item, item contains value while sub-item doesn't
+// item/sub-item stores pointer of lower sub-item and the pointer of the next node, simple illustration as bellow:
+//
+//         item --------------------------------> item ----> nil
+//         sub ------> item --------------------> sub -----> nil
+//         sub ------> sub -------> item -------> sub -----> nil
+//         sub ------> sub -------> sub --------> sub -----> nil
 
 type Node interface {
 	Value(opt ...int) int
@@ -108,7 +116,7 @@ func (sl *SkipList) find(value int) Node {
 		next := current.Next()
 		if _, sub := next.(*SubItem); next == nil || sub || next.Value() > value {
 			if current.Down() == nil {
-				return nil // 最后一层也没有就找不到了
+				return nil // when it goes beyond the lowest level, you won't be able to find what you need
 			}
 			current = current.Down()
 			continue
@@ -129,7 +137,7 @@ func (sl *SkipList) insert(value int) bool {
 	current := sl.Head
 	for depth, index := 0, 0; current != nil; {
 		next := current.Next()
-		if _, sub := next.(*SubItem); next == nil || sub || next.Value() > value { // 可以优化
+		if _, sub := next.(*SubItem); next == nil || sub || next.Value() > value { // optimizable
 			if depth >= sl.MaxLayers-layers {
 				updateNodes[index] = current
 				index++
