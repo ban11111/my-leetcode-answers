@@ -1,6 +1,6 @@
 package q9
 
-import "github.com/ban11111/my-leetcode-answers/q7/a7"
+import "github.com/ban11111/my-leetcode-answers/q1-50/q7/a7"
 
 func isPalindrome(x int) bool {
 	if x < 0 {
