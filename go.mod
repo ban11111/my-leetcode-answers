@@ -1,6 +1,6 @@
 module github.com/ban11111/my-leetcode-answers
 
-go 1.13
+go 1.26
 
 require (
 	github.com/dipperin/go-ms-toolkit v0.0.37
